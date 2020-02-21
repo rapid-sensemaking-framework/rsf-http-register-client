@@ -1,5 +1,7 @@
 # rsf-http-register-client
 
+[![rapid-sensemaking-framework](https://circleci.com/gh/rapid-sensemaking-framework/rsf-http-register-client.svg?style=svg)](https://circleci.com/gh/rapid-sensemaking-framework/rsf-http-register-client)
+
 connects to a remote rsf-http-register via websockets and spins up new registrations
 
 ## Environment Variables
