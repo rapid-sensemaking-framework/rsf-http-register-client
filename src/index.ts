@@ -13,6 +13,21 @@ const ENV_VARIABLE_NAMES = {
   REGISTER_PORT: 'REGISTER_PORT'
 }
 
+const setupTimeout = (
+  reject: (err: Error) => void,
+  socket: SocketIOClient.Socket
+) => {
+  // is 1500 ms too short?
+  setTimeout(() => {
+    socket.disconnect()
+    reject(
+      new Error(
+        'Exceeded 1500 millisecond timeout. Server seems unavailable...'
+      )
+    )
+  }, 1500)
+}
+
 const createParticipantRegister = (
   participantRegisterConfig: ParticipantRegisterConfig
 ): Promise<void> => {
@@ -27,10 +42,10 @@ const createParticipantRegister = (
       socket.disconnect()
       resolve()
     })
+    setupTimeout(reject, socket)
   })
 }
 
-// websockets to remote
 const getContactablesFromRegistration = (
   id: string,
   eachNew: (newParticipant: ContactableConfig) => void = () => {} // set default
@@ -40,10 +55,6 @@ const getContactablesFromRegistration = (
       process.env,
       ENV_VARIABLE_NAMES.REGISTER_WS_PROTOCOL
     )
-
-    // TODO: handle timeout
-    // capture the process kickoff time for reference
-    // const startTime = Date.now()
     const socket = socketClient(registerWsUrl)
     socket.on('connect', async () => {
       // kick it off
@@ -59,6 +70,11 @@ const getContactablesFromRegistration = (
         resolve(participants)
       }
     )
+    socket.on(EVENTS.NO_REGISTER_WITH_ID, (id: string) => {
+      socket.disconnect()
+      reject(new Error('No registration set up with id: ' + id))
+    })
+    setupTimeout(reject, socket)
   })
 }
 

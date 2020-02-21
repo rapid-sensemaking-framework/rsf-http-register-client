@@ -9,39 +9,25 @@ import { expect } from 'chai'
 // if you used the '@types/mocha' method to install mocha type definitions, uncomment the following line
 import 'mocha'
 import request from 'request'
-import start from 'rsf-http-register'
+import startServer from 'rsf-http-register'
 import { URLS } from 'rsf-http-register/dist/constants'
 import { ParticipantRegisterConfig } from 'rsf-types'
 
 const HOST = 'localhost'
-const PORT = '4000'
+const PORT1 = '4000'
+const PORT2 = '4001'
 
 describe('createParticipantRegister', () => {
-  let stopServer: () => void
-  before(function() {
-    // runs before all tests in this block
-    process.env['PORT'] = PORT
-  })
-  beforeEach(async () => {
-    // runs before each test in this block
-    stopServer = await start()
-    console.log('started server')
-  })
-  afterEach(function() {
-    // runs after each test in this block
-    stopServer()
-    console.log('stopped server')
-  })
-  after(function() {
-    // runs after all tests in this block
-    process.env['PORT'] = ''
-  })
-  context('when the server is available', () => {
+  context('when the server is available', async () => {
+    // for rsf-http-register
+    process.env['PORT'] = PORT1
+    let stopServer: () => void
+    stopServer = await startServer()
     const mockEnv = {
       REGISTER_HTTP_PROTOCOL: 'http',
       REGISTER_WS_PROTOCOL: 'ws',
       REGISTER_HOST: HOST,
-      REGISTER_PORT: PORT
+      REGISTER_PORT: PORT1
     }
     Object.keys(mockEnv).forEach(key => {
       process.env[key] = mockEnv[key]
@@ -55,13 +41,14 @@ describe('createParticipantRegister', () => {
         description: 'my description'
       }
       await createParticipantRegister(participantRegisterConfig)
-      // check at the endpoint
       const registerPath = URLS.REGISTER(ID)
       const registerAddress = getRegisterAddress(
         process.env,
         ENV_VARIABLE_NAMES.REGISTER_HTTP_PROTOCOL
       )
       const registerFullUrl = `${registerAddress}${registerPath}`
+      // check the endpoint for the new registration,
+      // which should still say it hasn't yet begun
       return new Promise((resolve, reject) => {
         request.get(registerFullUrl, function(err, res) {
           if (err) {
@@ -72,45 +59,111 @@ describe('createParticipantRegister', () => {
           expect(res.body).to.contain(
             'Registration for this process has not yet begun.'
           )
+          stopServer()
           resolve()
         })
       })
     })
   })
+  context('when the server is not available', () => {
+    const mockEnv = {
+      REGISTER_HTTP_PROTOCOL: 'http',
+      REGISTER_WS_PROTOCOL: 'ws',
+      REGISTER_HOST: HOST,
+      REGISTER_PORT: PORT1
+    }
+    Object.keys(mockEnv).forEach(key => {
+      process.env[key] = mockEnv[key]
+    })
+    it('should reject with a timeout error after 1500 milliseconds', async () => {
+      const ID = '1234'
+      const participantRegisterConfig: ParticipantRegisterConfig = {
+        id: ID,
+        maxParticipants: 3,
+        maxTime: 3000,
+        description: 'my description'
+      }
+      try {
+        await createParticipantRegister(participantRegisterConfig)
+      } catch (e) {
+        expect(e.toString()).to.equal(
+          'Error: Exceeded 1500 millisecond timeout. Server seems unavailable...'
+        )
+      }
+    })
+  })
 })
 
 describe('getContactablesFromRegistration', () => {
-  let stopServer: () => void
-  before(function() {
-    // runs before all tests in this block
-    process.env['PORT'] = PORT
-  })
-  beforeEach(async () => {
-    // runs before each test in this block
-    stopServer = await start()
-    console.log('started server')
-  })
-  afterEach(function() {
-    // runs after each test in this block
-    stopServer()
-    console.log('stopped server')
-  })
-  after(function() {
-    // runs after all tests in this block
-    process.env['PORT'] = ''
-  })
-  context('', () => {
-    it('should...', () => {
-      const mockEnv = {
-        REGISTER_HTTP_PROTOCOL: 'http',
-        REGISTER_WS_PROTOCOL: 'ws',
-        REGISTER_HOST: HOST,
-        REGISTER_PORT: PORT
+  context('when the server is available', async () => {
+    // for rsf-http-register
+    process.env['PORT'] = PORT2
+    let stopServer: () => void
+    stopServer = await startServer()
+    after(() => {
+      stopServer()
+    })
+    const mockEnv = {
+      REGISTER_HTTP_PROTOCOL: 'http',
+      REGISTER_WS_PROTOCOL: 'ws',
+      REGISTER_HOST: HOST,
+      REGISTER_PORT: PORT2
+    }
+    Object.keys(mockEnv).forEach(key => {
+      process.env[key] = mockEnv[key]
+    })
+    context('the registration is first created', async () => {
+      const ID = '1234'
+      const participantRegisterConfig: ParticipantRegisterConfig = {
+        id: ID,
+        maxParticipants: 3,
+        maxTime: 1500,
+        description: 'my description'
       }
-      Object.keys(mockEnv).forEach(key => {
-        process.env[key] = mockEnv[key]
+      await createParticipantRegister(participantRegisterConfig)
+      it('should connect, await all the participants, then disconnect', async () => {
+        const res = await getContactablesFromRegistration(ID)
+        expect(res).to.be.equal([])
       })
-      console.log('test')
+    })
+    context('the registration is not first created', async () => {
+      const ID = '0987'
+      it('should return an error indicating the registration with that ID does not exist', async () => {
+        try {
+          await getContactablesFromRegistration(ID)
+        } catch (e) {
+          expect(e.toString()).to.be.equal(
+            'Error: No registration set up with id: 0987'
+          )
+        }
+      })
+    })
+  })
+  context('when the server is not available', () => {
+    const mockEnv = {
+      REGISTER_HTTP_PROTOCOL: 'http',
+      REGISTER_WS_PROTOCOL: 'ws',
+      REGISTER_HOST: HOST,
+      REGISTER_PORT: PORT2
+    }
+    Object.keys(mockEnv).forEach(key => {
+      process.env[key] = mockEnv[key]
+    })
+    it('should reject with a timeout error after 1500 milliseconds', async () => {
+      const ID = '1234'
+      const participantRegisterConfig: ParticipantRegisterConfig = {
+        id: ID,
+        maxParticipants: 3,
+        maxTime: 3000,
+        description: 'my description'
+      }
+      try {
+        await createParticipantRegister(participantRegisterConfig)
+      } catch (e) {
+        expect(e.toString()).to.equal(
+          'Error: Exceeded 1500 millisecond timeout. Server seems unavailable...'
+        )
+      }
     })
   })
 })
