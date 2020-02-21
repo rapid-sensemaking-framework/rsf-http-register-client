@@ -1,2 +1,27 @@
 # rsf-http-register-client
+
 connects to a remote rsf-http-register via websockets and spins up new registrations
+
+## Environment Variables
+
+This project depends on the following environment variables:
+
+```bash
+// should be 'http' or 'https'
+REGISTER_HTTP_PROTOCOL
+
+// should be 'ws' or 'wss'
+REGISTER_WS_PROTOCOL
+
+// can be an ip address, or a domain name
+REGISTER_HOST
+
+// should just be a regular networking port number, if needed
+REGISTER_PORT
+```
+
+For reference, I got help setting up tests in typescript for mocha/chai using this little tutorial: https://journal.artfuldev.com/write-tests-for-typescript-projects-with-mocha-and-chai-in-typescript-86e053bdb2b6
+
+```
+
+```
