@@ -2,7 +2,9 @@
 
 [![rapid-sensemaking-framework](https://circleci.com/gh/rapid-sensemaking-framework/rsf-http-register-client.svg?style=svg)](https://circleci.com/gh/rapid-sensemaking-framework/rsf-http-register-client)
 
-connects to a remote rsf-http-register via websockets and spins up new registration pages
+connects to a remote [rsf-http-register](https://github.com/rapid-sensemaking-framework/rsf-http-register) via websockets, spins up new registration pages, and live streams and returns aggregate results.
+
+Feeds nicely into anything to do with [rsf-contactable](https://github.com/rapid-sensemaking-framework/rsf-contactable), which takes in the ContactableConfig data types that this outputs.
 
 ## Usage
 
