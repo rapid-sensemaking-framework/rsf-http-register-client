@@ -9,16 +9,16 @@ connects to a remote rsf-http-register via websockets and spins up new registrat
 This project depends on the following environment variables:
 
 ```bash
-// should be 'http' or 'https'
+// Required: should be 'http' or 'https'
 REGISTER_HTTP_PROTOCOL
 
-// should be 'ws' or 'wss'
+// Required: should be 'ws' or 'wss'
 REGISTER_WS_PROTOCOL
 
-// can be an ip address, or a domain name
+// Required: can be an ip address, or a domain name
 REGISTER_HOST
 
-// should just be a regular networking port number, if needed
+// Optional: should just be a regular networking port number, if needed
 REGISTER_PORT
 ```
 
