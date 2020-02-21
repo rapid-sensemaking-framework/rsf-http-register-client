@@ -72,7 +72,13 @@ const getContactablesFromRegistration = (
     )
     socket.on(EVENTS.NO_REGISTER_WITH_ID, (id: string) => {
       socket.disconnect()
-      reject(new Error('No registration set up with id: ' + id))
+      reject(
+        new Error(
+          'No registration set up with id: ' +
+            id +
+            '. First call createParticipantRegister'
+        )
+      )
     })
     setupTimeout(reject, socket)
   })

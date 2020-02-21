@@ -4,6 +4,41 @@
 
 connects to a remote rsf-http-register via websockets and spins up new registration pages
 
+## Usage
+
+The environment variables mentioned below will need to be setup.
+
+Note that you have to FIRST call `createParticipantRegister`, THEN you can call `getContactablesFromRegistration`. An error will be thrown otherwise.
+
+```javascript
+import {
+  createParticipantRegister,
+  getContactablesFromRegistration
+} from 'rsf-http-register-client'
+
+const example = async () => {
+  // generate a random ID which is URL compatible (no spaces)
+  const ID = '1234'
+
+  // setup the full configuration details
+  const participantRegisterConfig = {
+    id: ID,
+    maxParticipants: 3, // use '*' to set unlimited
+    maxTime: 1500, // seconds
+    description: 'description which will show on the registration page'
+  }
+
+  // set up an idle (still closed) registration page
+  await createParticipantRegister(participantRegisterConfig)
+  const liveResult = eachConfig => {
+    console.log('Received a new config', eachConfig)
+  }
+  // the return value will be the full set of registered contactable_configs,
+  // but you can also optionally pass the callback for a stream of them
+  const configs = await getContactablesFromRegistration(ID, liveResult)
+}
+```
+
 ## Environment Variables
 
 This project depends on the following environment variables:

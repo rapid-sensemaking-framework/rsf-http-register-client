@@ -133,7 +133,7 @@ describe('getContactablesFromRegistration', () => {
           await getContactablesFromRegistration(ID)
         } catch (e) {
           expect(e.toString()).to.be.equal(
-            'Error: No registration set up with id: 0987'
+            'Error: No registration set up with id: 0987. First call createParticipantRegister'
           )
         }
       })
